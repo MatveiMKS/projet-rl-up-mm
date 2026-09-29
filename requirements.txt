@@ -1,5 +1,21 @@
-numpy>=1.24
-pandas>=2.0
-torch>=2.0
-yfinance>=0.2.40
-pytest>=7
+# Python version
+python==3.7.4
+
+# Python libraries
+numpy
+scipy
+matplotlib
+pandas
+seaborn
+statsmodels
+pandas-datareader
+requests
+tqdm
+tabulate
+
+# Deep Learning framework
+pytorch
+tensorboard
+
+# OpenAI Gym RL framework
+gym
