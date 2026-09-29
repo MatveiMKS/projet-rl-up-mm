@@ -1,0 +1,21 @@
+# Testé avec Python 3.11.
+# ADAPTATION : le code d'origine (Python 3.7) écrit dans les DataFrames par
+# affectation en chaîne (data['Cash'][t] = ...), qui ne fonctionne plus à
+# partir de pandas 2 / 3. On fige donc pandas 1.5 et numpy 1.x.
+numpy<2
+pandas==1.5.3
+scipy
+matplotlib
+seaborn
+statsmodels
+yfinance
+requests
+tqdm
+tabulate
+
+# Deep Learning framework
+torch
+tensorboard
+
+# OpenAI Gym RL framework
+gym==0.26.2
