@@ -22,7 +22,8 @@ s'inspire. Si vous utilisez ce travail, citez le papier :
   year={2020},
   eprint={2004.06627},
   archivePrefix={arXiv}
-}```
+}
+```
 
 ## Organisation
 
