@@ -37,9 +37,10 @@ from TDQN import TDQN
 ###############################################################################
 
 # Variables defining the default trading horizon
-startingDate = '2012-1-1'
-endingDate = '2020-1-1'
-splitingDate = '2018-1-1'
+# ADAPTATION BTC : 6 ans de train, 2 ans de test, comme le papier (§5.1)
+startingDate = '2017-1-1'
+endingDate = '2025-1-1'
+splitingDate = '2023-1-1'
 
 # Variables defining the default observation and state spaces
 stateLength = 30
@@ -138,6 +139,12 @@ companies = {
     'Kirin' : '2503.T'
 }
 
+# ADAPTATION BTC : dictionary listing the cryptocurrencies supported
+cryptos = {
+    'Bitcoin' : 'BTC-USD',
+    'Ethereum' : 'ETH-USD'
+}
+
 # Dictionary listing the classical trading strategies supported
 strategies = {
     'Buy and Hold' : 'BuyAndHold',
@@ -224,7 +231,9 @@ class TradingSimulator:
         elif(stockName in indices):
             stock = indices[stockName]
         elif(stockName in companies):
-            stock = companies[stockName]    
+            stock = companies[stockName]
+        elif(stockName in cryptos):
+            stock = cryptos[stockName]    
         # Error message if the stock specified is not valid or not supported
         else:
             print("The stock specified is not valid, only the following stocks are supported:")
@@ -387,7 +396,9 @@ class TradingSimulator:
         elif(stockName in indices):
             stock = indices[stockName]
         elif(stockName in companies):
-            stock = companies[stockName]    
+            stock = companies[stockName]
+        elif(stockName in cryptos):
+            stock = cryptos[stockName]    
         # Error message if the stock specified is not valid or not supported
         else:
             print("The stock specified is not valid, only the following stocks are supported:")
@@ -505,7 +516,9 @@ class TradingSimulator:
         elif(stockName in indices):
             stock = indices[stockName]
         elif(stockName in companies):
-            stock = companies[stockName]    
+            stock = companies[stockName]
+        elif(stockName in cryptos):
+            stock = cryptos[stockName]    
         # Error message if the stock specified is not valid or not supported
         else:
             print("The stock specified is not valid, only the following stocks are supported:")

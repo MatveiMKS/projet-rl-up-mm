@@ -12,7 +12,7 @@ Institution: University of Liège
 ###############################################################################
 
 import pandas as pd
-import pandas_datareader as pdr
+import yfinance as yf
 import requests
 
 from io import StringIO
@@ -192,7 +192,9 @@ class YahooFinance:
         OUTPUTS:    - data: Pandas dataframe containing the stock market data.
         """
         
-        data = pdr.data.DataReader(marketSymbol, 'yahoo', startingDate, endingDate)
+        # ADAPTATION : pandas_datareader ne fonctionne plus avec Yahoo, on passe par yfinance
+        data = yf.download(marketSymbol, start=startingDate, end=endingDate,
+                           auto_adjust=False, progress=False, multi_level_index=False)
         self.data = self.processDataframe(data)
         return self.data
 
