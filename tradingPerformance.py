@@ -18,6 +18,17 @@ from matplotlib import pyplot as plt
 
 
 ###############################################################################
+############################### Global variables ##############################
+###############################################################################
+
+# ADAPTATION BTC : number of trading days in one year, used to annualise the
+# volatility, the Sharpe ratio and the Sortino ratio (252 for stocks in the
+# original code, cryptocurrencies are traded every day)
+tradingDaysPerYear = 365
+
+
+
+###############################################################################
 ######################### Class PerformanceEstimator ##########################
 ###############################################################################
 
@@ -116,8 +127,8 @@ class PerformanceEstimator:
         OUTPUTS:    - annualizedVolatily: Annualized Volatility performance indicator.
         """
         
-        # Compute the Annualized Volatility (252 trading days in 1 trading year)
-        self.annualizedVolatily = 100 * np.sqrt(252) * self.data['Returns'].std()
+        # Compute the Annualized Volatility (ADAPTATION BTC : tradingDaysPerYear)
+        self.annualizedVolatily = 100 * np.sqrt(tradingDaysPerYear) * self.data['Returns'].std()
         return self.annualizedVolatily
     
     
@@ -138,9 +149,9 @@ class PerformanceEstimator:
         # Compute the returns volatility
         volatility = self.data['Returns'].std()
         
-        # Compute the Sharpe Ratio (252 trading days in 1 year)
+        # Compute the Sharpe Ratio (ADAPTATION BTC : tradingDaysPerYear)
         if expectedReturn != 0 and volatility != 0:
-            self.sharpeRatio = np.sqrt(252) * (expectedReturn - riskFreeRate)/volatility
+            self.sharpeRatio = np.sqrt(tradingDaysPerYear) * (expectedReturn - riskFreeRate)/volatility
         else:
             self.sharpeRatio = 0
         return self.sharpeRatio
@@ -163,9 +174,9 @@ class PerformanceEstimator:
         negativeReturns = [returns for returns in self.data['Returns'] if returns < 0]
         volatility = np.std(negativeReturns)
         
-        # Compute the Sortino Ratio (252 trading days in 1 year)
+        # Compute the Sortino Ratio (ADAPTATION BTC : tradingDaysPerYear)
         if expectedReturn != 0 and volatility != 0:
-            self.sortinoRatio = np.sqrt(252) * (expectedReturn - riskFreeRate)/volatility
+            self.sortinoRatio = np.sqrt(tradingDaysPerYear) * (expectedReturn - riskFreeRate)/volatility
         else:
             self.sortinoRatio = 0
         return self.sortinoRatio

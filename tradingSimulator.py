@@ -41,6 +41,9 @@ from TDQN import TDQN
 startingDate = '2017-1-1'
 endingDate = '2025-1-1'
 splitingDate = '2023-1-1'
+# ADAPTATION : validation set (last year of the training period), used by TDQN
+# to keep the weights of its best training episode (paper §5.1)
+validationDate = '2022-1-1'
 
 # Variables defining the default observation and state spaces
 stateLength = 30
@@ -414,7 +417,13 @@ class TradingSimulator:
         # 2. TRAINING PHASE
 
         # Initialize the trading environment associated with the training phase
-        trainingEnv = TradingEnv(stock, startingDate, splitingDate, money, stateLength, transactionCosts)
+        # ADAPTATION : TDQN is trained before the validation date and validated after it
+        if ai:
+            trainingEnv = TradingEnv(stock, startingDate, validationDate, money, stateLength, transactionCosts)
+            validationEnv = TradingEnv(stock, validationDate, splitingDate, money, stateLength, transactionCosts)
+            validationEnv.epsilon = trainingEnv.epsilon
+        else:
+            trainingEnv = TradingEnv(stock, startingDate, splitingDate, money, stateLength, transactionCosts)
 
         # Instanciate the strategy classes
         if ai:
@@ -427,15 +436,23 @@ class TradingSimulator:
             tradingStrategy = className()
 
         # Training of the trading strategy
-        trainingEnv = tradingStrategy.training(trainingEnv, trainingParameters=trainingParameters,
-                                               verbose=verbose, rendering=rendering,
-                                               plotTraining=plotTraining, showPerformance=showPerformance)
+        if ai:
+            trainingEnv = tradingStrategy.training(trainingEnv, trainingParameters=trainingParameters,
+                                                   verbose=verbose, rendering=rendering,
+                                                   plotTraining=plotTraining, showPerformance=showPerformance,
+                                                   validationEnv=validationEnv)
+        else:
+            trainingEnv = tradingStrategy.training(trainingEnv, trainingParameters=trainingParameters,
+                                                   verbose=verbose, rendering=rendering,
+                                                   plotTraining=plotTraining, showPerformance=showPerformance)
 
         
         # 3. TESTING PHASE
 
         # Initialize the trading environment associated with the testing phase
         testingEnv = TradingEnv(stock, splitingDate, endingDate, money, stateLength, transactionCosts)
+        # ADAPTATION BTC : solvency parameter estimated on the training data only
+        testingEnv.epsilon = trainingEnv.epsilon
 
         # Testing of the trading strategy
         testingEnv = tradingStrategy.testing(trainingEnv, testingEnv, rendering=rendering, showPerformance=showPerformance)
@@ -555,6 +572,7 @@ class TradingSimulator:
         # Initialize the trading environments associated with the testing phase
         trainingEnv = TradingEnv(stock, startingDate, splitingDate, money, stateLength, transactionCosts)
         testingEnv = TradingEnv(stock, splitingDate, endingDate, money, stateLength, transactionCosts)
+        testingEnv.epsilon = trainingEnv.epsilon  # ADAPTATION BTC
 
         # Testing of the trading strategy
         trainingEnv = tradingStrategy.testing(trainingEnv, trainingEnv, rendering=rendering, showPerformance=showPerformance)

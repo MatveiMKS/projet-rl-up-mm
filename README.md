@@ -16,22 +16,47 @@ restent à ses auteurs.
 
 Toutes sont marquées `ADAPTATION` dans le code.
 
-- `tradingSimulator.py` : dates 2017-01-01 → 2023-01-01 (train) et
-  2023-01-01 → 2025-01-01 (test), soit 6 ans / 2 ans comme le papier (§5.1) ;
+**Pour faire tourner le code sur le BTC**
+- `tradingSimulator.py` : train 2017-2021, validation 2022, test 2023-2024 ;
   ajout d'un dictionnaire `cryptos` (`Bitcoin`, `Ethereum`).
-- `TDQN.py` : la date de fin `'2020-1-1'` écrite en dur (l.658 et l.905) est
-  remplacée par `'2025-1-1'`.
+- `TDQN.py` : date de fin `'2020-1-1'` écrite en dur remplacée (`plotExpectedPerformance`, l.921).
 - `dataDownloader.py` : téléchargement Yahoo via `yfinance`, car
   `pandas_datareader` ne fonctionne plus avec Yahoo.
 - `main.py` : actif par défaut `Bitcoin`.
 - `requirements.txt` : versions qui tournent sous Python 3.11. pandas est figé
   en 1.5.3, car le code écrit dans les DataFrames par affectation en chaîne
   (`data['Cash'][t] = ...`), ce que pandas 2 et 3 n'appliquent plus.
-- Dossiers `Figures/` et `Data/` créés (le code y écrit graphiques et cache CSV).
 
-Non modifié, à garder en tête : les indicateurs annualisent avec 252 jours
-(`tradingPerformance.py:120,143,168`) alors que le BTC cote 365 jours par an ;
-les quantités sont entières (`math.floor` dans `tradingEnv.py`).
+**Pour que les résultats aient plus de sens sur le BTC (on s'éloigne du papier)**
+1. **Validation** (`tradingSimulator.py`, `TDQN.training`) : TDQN s'entraîne
+   jusqu'à `validationDate`, est évalué sur la validation après chaque épisode,
+   et garde les poids du meilleur Sharpe de validation. L'original traçait le
+   Sharpe du test pendant l'entraînement et gardait le dernier épisode.
+   Les stratégies classiques s'entraînent toujours jusqu'à `splitingDate`.
+2. **365 jours par an** pour annualiser volatilité, Sharpe et Sortino
+   (`tradingDaysPerYear` dans `tradingPerformance.py`, 252 dans l'original).
+3. **Sens de l'action 0** (`positionMode` dans `tradingEnv.py`) :
+   - `'longShort'` (défaut) : long / short, comme le papier ;
+   - `'longShortFunding'` : long / short, avec un coût d'emprunt quotidien sur
+     les shorts (`dailyShortCost`, 0,03 % par jour, valeur indicative à calibrer) ;
+   - `'longCash'` : long / tout en cash, sans vente à découvert.
+4. **Seuil de solvabilité des shorts** (`shortEpsilon` dans `tradingEnv.py`) :
+   variation de prix maximale supposée en un pas, fixée à 0,1 dans l'original.
+   Par défaut (`'auto'`), c'est la plus forte hausse journalière des données
+   d'entraînement (au moins 0,1), reprise telle quelle en validation et en test.
+   Sans effet en mode `'longCash'`.
+5. **Correction d'un bug** : dans l'original, la transition de l'action
+   opposée (astuce d'exploration, §4.2) utilisait, pour le cas long → short, le
+   nombre d'actions déjà mis à jour au lieu de l'ancien. Une seule fonction
+   (`computeTransition`) calcule désormais les deux transitions.
+6. **Quantités fractionnaires** (`fractionalShares` dans `tradingEnv.py`,
+   `True` par défaut) au lieu d'un nombre entier d'actions.
+7. **Bruit relatif** (`dataAugmentation.noiseAddition`) : l'écart-type est
+   `stdev` % du prix, au lieu de `stdev × prix / 10 000` qui explosait au prix
+   du BTC. Le bruit reste désactivé par défaut (`noiseRange = [0]`).
+
+Pour changer un réglage, modifier la variable globale en haut du fichier
+concerné (comme les autres réglages du code d'origine).
 
 ## Utilisation
 

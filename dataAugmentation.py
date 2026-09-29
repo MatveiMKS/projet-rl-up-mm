@@ -124,8 +124,11 @@ class DataAugmentation:
             # Generation of artificial gaussian random noises
             price = newTradingEnv.data['Close'][i]
             volume = newTradingEnv.data['Volume'][i]
-            priceNoise = np.random.normal(0, stdev*(price/100))
-            volumeNoise = np.random.normal(0, stdev*(volume/100))
+            # ADAPTATION BTC : the original standard deviation was stdev*(price/100),
+            # i.e. a relative noise of stdev*price/10000 that grows with the price
+            # level. Here the noise is stdev percent of the price, whatever its level.
+            priceNoise = np.random.normal(0, stdev)
+            volumeNoise = np.random.normal(0, stdev)
 
             # Addition of the artificial noise generated
             newTradingEnv.data['Close'][i] *= (1 + priceNoise/100)
