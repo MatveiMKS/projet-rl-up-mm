@@ -2,111 +2,102 @@
 
 *Projet de recherche étudiant — [auteurs] — [date]*
 
-## 1. Objectif
+## 1. Objectif et contexte
 
 Théate et Ernst proposent TDQN, un agent d'apprentissage par renforcement profond
-qui décide chaque jour comment se positionner sur un marché pour maximiser le
-rapport entre gain et risque (§3.5). Ils l'évaluent sur 30 actions et indices
-boursiers entre 2018 et 2019 (§5.1), et citent eux-mêmes le Bitcoin comme terrain
-d'application possible (§3.1). Ce projet reprend leur méthode et l'adapte au BTC.
+qui décide chaque jour comment se positionner sur un marché (§3). Ils l'évaluent
+sur 30 actions et indices (§5.1) et citent le Bitcoin comme terrain possible
+(§3.1). Nous reprenons leur code et l'appliquons au BTC.
 
-## 2. Contexte : trading et Bitcoin
+Être **long**, c'est acheter l'actif : on gagne s'il monte. Être **short** (vente
+à découvert), c'est emprunter l'actif pour le vendre, puis le racheter plus tard :
+on gagne s'il baisse, mais la perte n'est pas bornée. On peut aussi rester **en
+cash**. Chaque transaction paie des **frais**. Le critère principal du papier est
+le **ratio de Sharpe** : rendement moyen divisé par sa volatilité, ramené à
+l'année (§3.5). Le **drawdown maximal** est la plus forte perte entre un sommet et
+le creux suivant. La référence est **buy & hold** : acheter au début et ne plus
+rien faire.
 
-Une stratégie de **trading algorithmique** décide automatiquement, à intervalles
-réguliers (ici chaque jour), quelle position prendre sur un actif. Deux positions
-de base existent. Être **long**, c'est acheter l'actif : on gagne s'il monte.
-Être **short** (vente à découvert), c'est emprunter l'actif pour le vendre tout de
-suite, puis le racheter plus tard pour le rendre : on gagne s'il baisse, mais la
-perte n'est pas bornée s'il monte, et l'emprunt a généralement un coût. On peut
-aussi rester **en cash**, sans exposition. Chaque achat ou vente paie des **frais
-de transaction**, qui pénalisent les stratégies qui changent souvent de position.
+## 2. Méthode et adaptations
 
-Gagner de l'argent ne suffit pas à juger une stratégie : il faut tenir compte du
-risque pris. L'indicateur principal du papier est le **ratio de Sharpe** : le
-rendement moyen de la stratégie divisé par l'écart-type de ce rendement (sa
-volatilité), ramené à l'année (§3.5). Un Sharpe de 1 signifie que le gain annuel
-moyen vaut une fois la volatilité annuelle. On regarde aussi le **drawdown
-maximal**, la plus forte perte subie entre un sommet et le creux suivant. La
-référence naturelle est **buy & hold** : acheter au début et ne plus rien faire.
+L'agent observe les prix et volumes des 30 derniers jours et sa position (§3.4.1),
+choisit chaque jour long ou short (§3.4.2) et reçoit comme récompense le rendement
+journalier du portefeuille (§3.4.3). Il apprend avec DQN (§4.1) et, à chaque pas,
+apprend aussi de l'action qu'il n'a pas jouée, dont le résultat se calcule à
+partir des prix (§4.2), et s'entraîne sur des séries de prix artificiellement
+perturbées (§4.3).
 
-Le **Bitcoin** diffère des actions étudiées dans le papier sur trois points utiles
-ici. Il s'échange en continu, tous les jours de l'année, sans fermeture le
-week-end. Il est nettement plus volatil. Enfin, son historique de prix est plus
-court, et une unité vaut une somme élevée, ce qui oblige à acheter des fractions.
+Le BTC s'échangeant tous les jours, les indicateurs sont annualisés sur 365 jours
+au lieu de 252. L'agent peut acheter des fractions de BTC. La contrainte qui
+garantit qu'un short reste remboursable utilise la plus forte hausse journalière
+observée plutôt qu'une valeur fixe. Nous avons corrigé une erreur dans le calcul
+du résultat de l'action non jouée. Enfin, comme le short est coûteux ou
+indisponible sur crypto, nous avons ajouté un mode **long ou cash** où l'action «
+short » est remplacée par la sortie du marché. Le papier mentionne une période de
+validation (§5.1) sans la décrire : après chaque passe d'entraînement, l'agent est
+évalué sur cette période et l'on garde les poids qui y obtiennent le meilleur
+Sharpe.
 
-## 3. La méthode TDQN
+## 3. Protocole
 
-L'agent observe les prix et volumes des 30 derniers jours ainsi que sa position
-actuelle (§3.4.1). Il choisit chaque jour entre deux actions, long ou short, la
-quantité étant déduite du capital disponible et d'une contrainte qui garantit
-qu'une position short reste remboursable (§3.4.2). Sa récompense est le rendement
-journalier du portefeuille (§3.4.3). L'apprentissage repose sur l'algorithme DQN,
-qui estime par un réseau de neurones la valeur de chaque action, avec plusieurs
-améliorations connues pour stabiliser l'entraînement (§4.1, §4.3). Une astuce
-propre au trading accélère l'exploration : à chaque pas, l'agent apprend aussi de
-l'action qu'il n'a pas jouée, puisque son résultat se calcule directement à partir
-des prix (§4.2). Pour compenser le peu de données, les prix sont lissés et des
-séries artificielles légèrement modifiées sont générées (§4.3).
+Données : prix journaliers du BTC en dollars, capital 100 000 $, frais de 0,1 %.
+Entraînement de 2017 à 2020, validation 2021-2022, test 2023-2024. Ces périodes
+diffèrent fortement : sur la validation, buy & hold perd 44 % (+58 % en 2021, −65
+% en 2022, Sharpe −0,03) ; sur le test, il gagne 462 % (Sharpe 2,01).
 
-Sur Apple, TDQN obtient un Sharpe de 1,48 contre 1,24 pour buy & hold (Table 4) ;
-sur Tesla, action très volatile, 0,26 contre 0,51 (Table 5). Les auteurs
-soulignent une forte variance d'un entraînement à l'autre et un risque de
-surapprentissage (§6).
+Nous avons réglé TDQN par phases, une famille d'hyperparamètres à la fois, avec 3
+graines aléatoires par variante (5 pour les configurations finales) et 50 passes
+d'entraînement. Le critère de choix est le Sharpe de validation moyen sur les 10
+dernières passes, pour ne jamais choisir en regardant le test. Nous avons ensuite
+comparé TDQN à **PPO**, un algorithme qui apprend directement une politique au
+lieu d'estimer la valeur de chaque action.
 
-## 4. Adaptations au Bitcoin
+## 4. Résultats
 
-Nous avons d'abord adapté le **découpage des données** : l'historique du BTC étant
-plus court, l'entraînement porte sur 2017-2021 et le test sur 2023-2024. L'année
-2022 sert de **validation** : après chaque passe d'entraînement, l'agent est évalué
-sur cette période et l'on conserve la version qui y obtient le meilleur Sharpe. Le
-papier mentionne une telle validation (§5.1) sans la décrire ; elle évite de
-choisir le modèle en regardant, même indirectement, la période de test.
+**Réglage.** Aucun réglage n'apporte de gain robuste. Facteur d'actualisation,
+dropout, régularisation L2, taux d'apprentissage et bruit d'augmentation font
+moins bien que les valeurs par défaut, ou sont trop instables entre graines. Seul
+un réseau plus petit (128 neurones par couche au lieu de 512) semblait mieux faire
+sur 3 graines (Sharpe de validation 0,18 contre 0,02). Sur 5 graines, l'écart
+disparaît : 128 neurones donne −0,04 ± 0,32 en validation et −0,41 ± 0,64 en test,
+512 neurones 0,02 ± 0,14 et −0,18 ± 0,50.
 
-Comme le Bitcoin s'échange tous les jours, les indicateurs sont **annualisés sur
-365 jours** au lieu des 252 jours de bourse utilisés pour les actions (§3.5).
+**Long ou cash.** Interdire le short change tout (test, 128 neurones, moyenne ±
+écart-type sur 5 graines) :
 
-La **position short** pose deux questions sur crypto : son coût et sa
-disponibilité. Nous avons donc prévu trois variantes : long ou short comme dans le
-papier ; long ou short avec un coût d'emprunt quotidien sur les positions short ;
-et long ou cash, sans vente à découvert. Pour la contrainte de remboursement des
-shorts, le papier suppose une variation de prix journalière maximale fixe ; nous
-l'estimons plutôt à partir de la plus forte hausse observée sur la période
-d'entraînement, car la volatilité du BTC dépasse celle des actions.
-
-L'agent peut acheter des **fractions de BTC**, alors que le papier impose un nombre
-entier d'actions (§3.4.2), ce qui n'aurait pas de sens quand une unité représente
-une grande part du capital. Le **bruit** utilisé pour générer des données
-artificielles est désormais proportionnel au prix : dans la version d'origine,
-son amplitude relative grandissait avec le niveau de prix et devenait démesurée
-au prix du BTC. Enfin, nous avons corrigé une erreur dans le calcul du résultat
-de l'action non jouée, qui faussait l'astuce d'exploration dans le cas d'un
-passage de long à short.
-
-## 5. Protocole expérimental
-
-Les données sont les prix journaliers du BTC en dollars, disponibles depuis
-septembre 2014. Le capital initial est de 100 000 $ et les frais de 0,1 % par
-transaction, valeurs par défaut de l'implémentation des auteurs. TDQN est comparé aux stratégies de référence
-du papier (§5.2) : buy & hold, vente à découvert permanente, suivi de tendance et
-retour à la moyenne. Vu la variance de TDQN, plusieurs entraînements sont
-nécessaires pour chaque variante.
-
-## 6. Résultats
-
-*À compléter après les expériences.*
-
-| Stratégie | Sharpe | Rendement annualisé | Drawdown max |
+| Stratégie (test 2023-2024) | Sharpe | Rendement annualisé | Drawdown max |
 |---|---|---|---|
-| Buy & hold | | | |
-| TDQN (long/short) | | | |
-| TDQN (long/cash) | | | |
+| Buy & hold | 2,01 | +137 % | 26 % |
+| TDQN long/short | −0,41 ± 0,64 | négatif | — |
+| TDQN long/cash | 1,20 ± 0,91 | +40 % | 20 % |
+| PPO long/cash | 1,34 ± 0,15 | +36 % | 20 % |
 
-## 7. Discussion et limites
+TDQN long/cash obtient un Sharpe d'environ 1,3 à 1,8 sur quatre graines, mais une
+graine finit à −0,39. PPO (taux d'apprentissage 3·10⁻⁴) atteint un Sharpe
+comparable avec une variance bien plus faible : ses 5 graines sont entre 1,12 et
+1,50. Aucun agent ne bat buy & hold, mais les deux versions long/cash gagnent de
+l'argent avec un drawdown plus faible.
 
-*À compléter.* Pistes : sensibilité aux frais et au type de position, instabilité
-entre entraînements, changement de comportement du marché entre validation et test.
+## 5. Discussion et limites
 
-## Référence
+Le premier problème est la **variance entre entraînements**, déjà notée par les
+auteurs (§6.1, §6.6). Sur 3 graines, des écarts de Sharpe de 0,2 à 0,4 relèvent du
+bruit, et plusieurs « améliorations » apparentes ont disparu à 5 graines. Un
+réglage fin demanderait bien plus de graines que notre budget de calcul ne le
+permet.
 
-T. Théate, D. Ernst, *An Application of Deep Reinforcement Learning to Algorithmic
-Trading*, arXiv:2004.06627v3.
+Le second est le **changement de régime** du marché, que les auteurs identifient
+comme une limite principale (§6.6). La validation, baissière en 2022, récompense
+les agents qui shortent ; le test, très haussier, les pénalise. Le Sharpe de
+validation est donc un mauvais prédicteur du test, parfois même anti-corrélé :
+TDQN long/cash a un Sharpe de validation négatif (−0,29) mais un résultat positif
+en test. Une validation glissante sur plusieurs périodes serait plus sûre.
+
+Le mode long/cash fonctionne parce qu'il borne le pire cas : sur un actif à forte
+tendance haussière, l'agent ne peut plus perdre en pariant à la baisse, il peut
+seulement manquer une partie de la hausse. Il ne peut donc pas battre buy & hold
+dans un marché aussi haussier. Enfin, ces conclusions reposent sur une seule
+période de test.
+
+**Référence.** T. Théate, D. Ernst, *An Application of Deep Reinforcement Learning
+to Algorithmic Trading*, arXiv:2004.06627v3.
