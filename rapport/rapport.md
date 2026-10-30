@@ -2,6 +2,11 @@
 
 *Projet de recherche étudiant — [auteurs] — [date]*
 
+> **En bref.** Nous appliquons au Bitcoin l'agent TDQN de Théate et Ernst et le comparons à PPO.
+> Dans le mode du papier (long/short), TDQN perd de l'argent sur 2023-2024. En se limitant à
+> « investi ou en cash », il devient rentable : Sharpe 1,20 pour TDQN et 1,34 pour PPO, le plus
+> régulier, avec un drawdown de 20 % contre 26 % pour la simple détention du BTC.
+
 ## 1. Objectif et contexte
 
 Théate et Ernst proposent TDQN, un agent d'apprentissage par renforcement profond qui
