@@ -27,3 +27,4 @@ h2#références + p, h2#références ~ p { font-size: 8.8pt; line-height: 1.35; 
 th, td { white-space: nowrap; }
 table { width: auto !important; }
 col { width: auto !important; }
+a { color: var(--accent); text-decoration: none; hyphens: none; }

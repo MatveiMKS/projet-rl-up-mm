@@ -138,4 +138,4 @@ trading," *Expert Systems with Applications*, vol. 173, Art. no. 114632, 2021, d
 [2] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, "Proximal policy
 optimization algorithms," arXiv:1707.06347, 2017.
 
-[3] T. Théate, code source de [1], GitHub, 2020. [En ligne] : https://github.com/ThibautTheate/An-Application-of-Deep-Reinforcement-Learning-to-Algorithmic-Trading
+[3] T. Théate, code source de [1], GitHub, 2020. [En ligne] : <https://github.com/ThibautTheate/An-Application-of-Deep-Reinforcement-Learning-to-Algorithmic-Trading>
