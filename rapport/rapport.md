@@ -97,7 +97,7 @@ entraînée avec 3 graines aléatoires, et 5 pour les configurations finales.
 **Réglage de TDQN (mode long/short).** Nous avons fait varier le facteur
 d'actualisation, le dropout, la régularisation, la taille du réseau, le taux
 d'apprentissage et le bruit d'augmentation. Aucune variante ne bat durablement les
-réglages d'origine : les écarts observés sur 3 graines disparaissent à 5. En mode
+réglages d'origine : les écarts vus avec 3 graines disparaissent avec 5 graines. En mode
 long/short, TDQN perd de l'argent sur le test, car la validation (2022, année de krach)
 retient les versions qui parient à la baisse, juste avant deux années de forte hausse.
 
