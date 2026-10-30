@@ -132,7 +132,7 @@ haussier, mais il capte une bonne part de la hausse en s'exposant beaucoup moins
 
 - Dashboard de lancement de runs
 - Setup du balayage des hyperparamètres
-- Aide à l'implémentation de PPO (versions des bibliothèques)
+- Aide à l'implémentation de PPO (difficultés avec les bibliothèques)
 - Correction d'orthographe et de syntaxe du rapport
 - Mise en page du rapport
 - Correction d'orthographe et de syntaxe du PowerPoint
