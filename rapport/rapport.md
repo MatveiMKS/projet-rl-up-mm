@@ -27,7 +27,7 @@ la plus forte baisse du capital entre un sommet et le creux suivant.
 La référence est **buy and hold** : acheter au début et ne plus rien faire. Sur le
 Bitcoin, dont le prix a été multiplié de nombreuses fois en dix ans, c'est un adversaire
 redoutable : sur une longue période, la détention patiente bat souvent un agent qui
-entre et sort du marché, car chaque sortie risque de manquer une partie de la hausse.
+entre et sort du marché, au risque de manquer une partie de la hausse.
 
 ## 2. Méthode
 
@@ -88,9 +88,9 @@ entraînée avec 3 graines aléatoires, et 5 pour les configurations finales.
 
 ## 4. Résultats
 
-**Réglage de TDQN (mode long/short).** Nous avons fait varier le facteur
+**Réglage de TDQN (mode long/short).** Nous avons réglé le facteur
 d'actualisation, le dropout, la régularisation, la taille du réseau, le taux
-d'apprentissage et le bruit d'augmentation. Aucune variante ne bat durablement les
+d'apprentissage et le bruit. Aucune variante ne bat durablement les
 réglages d'origine. Un même réglage, entraîné
 avec des graines aléatoires différentes, donne des agents différents. Un réseau plus
 petit semblait meilleur sur 3 entraînements, mais cet avantage disparaît sur 5 : c'était
@@ -111,23 +111,34 @@ chaque stratégie, ses meilleurs paramètres et ses résultats sur le test 2023-
 
 TDQN long/cash atteint un Sharpe de 1,3 à 1,8 sur quatre graines, mais une graine
 finit à −0,39. PPO obtient un Sharpe comparable avec une régularité bien supérieure :
-ses 5 graines sont toutes entre 1,12 et 1,50. Sans surprise vu la hausse du BTC sur
-cette période, buy and hold reste devant ; mais les deux agents long/cash gagnent de
-l'argent avec une perte maximale plus faible, et PPO le fait de façon régulière en n'étant
-investi que 44 % du temps.
+ses 5 graines sont toutes entre 1,12 et 1,50. Buy and hold reste devant, sans
+surprise vu la hausse du BTC, mais les deux agents long/cash gagnent de l'argent avec
+une perte maximale plus faible ; PPO n'est investi que 44 % du temps.
 
 ## 5. Conclusion
 
-Nous avons appliqué au Bitcoin l'agent TDQN de Théate et Ernst avec un minimum de
-changements. Tel quel, en long/short, il ne fonctionne pas sur cet actif : la
+Appliqué tel quel au Bitcoin en long/short, TDQN ne fonctionne pas : la
 validation sur le krach de 2022 favorise les paris à la baisse, qui coûtent cher
 pendant la reprise. En
 limitant l'agent à un choix entre être investi et rester en cash, nous obtenons une
 stratégie rentable, avec un Sharpe de 1,2 à 1,3 et un risque plus faible que la
-simple détention. PPO donne le résultat le plus fiable, avec un Sharpe stable d'un
-entraînement à l'autre. Comme dans le papier, où TDQN ne devance buy and hold que de
+simple détention. PPO est le plus fiable d'un entraînement à l'autre. Comme dans le papier, où TDQN ne devance buy and hold que de
 peu en moyenne [1, Table 6], l'agent ne bat pas la détention passive sur un marché très
 haussier, mais il capte une bonne part de la hausse en s'exposant beaucoup moins.
+
+## Utilisation de l'IA générative dans le projet
+
+<div class="ia">
+
+- Dashboard de lancement de runs
+- Setup du balayage des hyperparamètres
+- Aide à l'implémentation de PPO (versions des bibliothèques)
+- Correction d'orthographe et de syntaxe du rapport
+- Mise en page du rapport
+- Correction d'orthographe et de syntaxe du PowerPoint
+- Mise en page du PowerPoint
+
+</div>
 
 ## Références
 
@@ -138,4 +149,4 @@ trading," *Expert Systems with Applications*, vol. 173, Art. no. 114632, 2021, d
 [2] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, "Proximal policy
 optimization algorithms," arXiv:1707.06347, 2017.
 
-[3] T. Théate, code source de [1], GitHub, 2020. [En ligne] : <https://github.com/ThibautTheate/An-Application-of-Deep-Reinforcement-Learning-to-Algorithmic-Trading>
+[3] T. Théate, code source de [1], GitHub, 2020. <https://github.com/ThibautTheate/An-Application-of-Deep-Reinforcement-Learning-to-Algorithmic-Trading>
