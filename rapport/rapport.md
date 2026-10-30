@@ -1,6 +1,6 @@
 # Apprentissage par renforcement profond pour trader le Bitcoin
 
-*Projet de recherche étudiant — [auteurs] — [date]*
+*Projet de recherche étudiant — Maksimenka, Poulin — vendredi 30 octobre 2026*
 
 ## 1. Objectif et contexte
 
@@ -21,10 +21,10 @@ Le critère qui guide tout le projet est le **ratio de Sharpe** : le rendement m
 divisé par sa volatilité, ramené à l'année [1, §3.5]. Il mesure le gain obtenu par unité
 de risque pris, ce qui le rend plus juste que le gain brut : une stratégie qui gagne
 autant en étant moins secouée a un meilleur Sharpe. C'est lui qui sert à choisir les
-modèles et à comparer les résultats. On regarde aussi le **drawdown maximal**, la plus
-forte perte subie entre un sommet et le creux suivant.
+modèles et à comparer les résultats. On regarde aussi la **perte maximale** (ou *drawdown*),
+la plus forte baisse du capital entre un sommet et le creux suivant.
 
-La référence est **buy & hold** : acheter au début et ne plus rien faire. Sur le
+La référence est **buy and hold** : acheter au début et ne plus rien faire. Sur le
 Bitcoin, dont le prix a été multiplié de nombreuses fois en dix ans, c'est un adversaire
 redoutable : sur une longue période, la détention patiente bat souvent un agent qui
 entre et sort du marché, car chaque sortie risque de manquer une partie de la hausse.
@@ -56,15 +56,15 @@ ou le garde s'il en a déjà. La seconde dépend du mode testé.
 
 Nous avons mené les deux expériences. Le mode long/cash correspond avant tout à notre
 propre manière d'investir : nous achetons, conservons et revendons, sans jamais parier à
-la baisse. Il colle aussi au marché crypto, où la vente à découvert est coûteuse.
+la baisse. Le short est un outil de trading plus poussé, auquel nous ne recourons pas
+personnellement : il était donc logique d'essayer sans.
 
 **Adaptations au BTC.** Le BTC s'échangeant tous les jours, les indicateurs sont
 annualisés sur 365 jours au lieu de 252. L'agent peut acheter des fractions de BTC,
 alors que le papier impose un nombre entier d'actions. En mode long/short, la
 contrainte qui garantit qu'un short reste remboursable utilise la plus forte hausse
 journalière observée, car le BTC dépasse souvent la valeur fixe prévue pour les
-actions. Nous avons aussi corrigé une erreur du code d'origine dans le calcul de
-l'action non jouée.
+actions (10 %).
 
 **PPO.** Là où TDQN estime la valeur de chaque action pour jouer la meilleure, PPO
 apprend directement la probabilité de jouer chaque action, et limite à chaque mise à
@@ -75,7 +75,7 @@ reprend le réseau, les données et l'évaluation de TDQN.
 
 Les données sont les prix journaliers du BTC en dollars, avec un capital de 100 000 $.
 L'entraînement couvre 2017 à 2020, la validation 2021-2022 et le test 2023-2024. Ces
-périodes diffèrent fortement : sur la validation, buy & hold perd 44 % (Sharpe
+périodes diffèrent fortement : sur la validation, buy and hold perd 44 % (Sharpe
 −0,03) ; sur le test, il gagne 462 % (Sharpe 2,01).
 
 Le papier mentionne une validation [1, §5.1] sans la décrire. Nous l'utilisons ainsi :
@@ -91,20 +91,20 @@ entraînée avec 3 graines aléatoires, et 5 pour les configurations finales.
 **Réglage de TDQN (mode long/short).** Nous avons fait varier le facteur
 d'actualisation, le dropout, la régularisation, la taille du réseau, le taux
 d'apprentissage et le bruit d'augmentation. Aucune variante ne bat durablement les
-réglages d'origine. La graine aléatoire fixe l'initialisation du réseau et le hasard
-de l'exploration : changer de graine donne un autre agent. Sur 3 graines, un réseau de 128 neurones semblait meilleur que celui
-d'origine (512 neurones), avec un Sharpe de validation de 0,18 contre 0,02. Refait sur
-5 graines, l'avantage disparaît (−0,04 contre 0,02) : il venait du hasard. En mode
-long/short, TDQN perd de l'argent sur le test, car la validation (2022, année de krach)
-retient les versions qui parient à la baisse, juste avant deux années de forte hausse.
+réglages d'origine. Un même réglage, entraîné
+avec des graines aléatoires différentes, donne des agents différents. Un réseau plus
+petit semblait meilleur sur 3 entraînements, mais cet avantage disparaît sur 5 : c'était
+de la chance. En mode long/short, TDQN perd de l'argent sur le test : la validation,
+tombée sur le krach de 2022, a favorisé les agents qui parient à la baisse, juste avant
+deux années de forte hausse.
 
 **Passage en long/cash.** Supprimer le short change tout. Le tableau donne, pour
 chaque stratégie, ses meilleurs paramètres et ses résultats sur le test 2023-2024
 (moyenne ± écart-type sur 5 graines) :
 
-| Stratégie | Meilleurs paramètres | Sharpe | Rendement annualisé | Drawdown max |
+| Stratégie | Meilleurs paramètres | Sharpe | Rendement annualisé | Perte maximale |
 |---|---|---|---|---|
-| Buy & hold | — | 2,01 | +137 % | 26 % |
+| Buy and hold | — | 2,01 | +137 % | 26 % |
 | TDQN long/short | réglages d'origine (512 neurones) | −0,18 ± 0,50 | −13 % | 62 % |
 | TDQN long/cash | 128 neurones | 1,20 ± 0,91 | +40 % | 20 % |
 | PPO long/cash | 128 neurones, taux 3·10⁻⁴ | 1,34 ± 0,15 | +36 % | 20 % |
@@ -112,8 +112,8 @@ chaque stratégie, ses meilleurs paramètres et ses résultats sur le test 2023-
 TDQN long/cash atteint un Sharpe de 1,3 à 1,8 sur quatre graines, mais une graine
 finit à −0,39. PPO obtient un Sharpe comparable avec une régularité bien supérieure :
 ses 5 graines sont toutes entre 1,12 et 1,50. Sans surprise vu la hausse du BTC sur
-cette période, buy & hold reste devant ; mais les deux agents long/cash gagnent de
-l'argent avec un drawdown plus faible, et PPO le fait de façon régulière en n'étant
+cette période, buy and hold reste devant ; mais les deux agents long/cash gagnent de
+l'argent avec une perte maximale plus faible, et PPO le fait de façon régulière en n'étant
 investi que 44 % du temps.
 
 ## 5. Conclusion
@@ -125,7 +125,7 @@ pendant la reprise. En
 limitant l'agent à un choix entre être investi et rester en cash, nous obtenons une
 stratégie rentable, avec un Sharpe de 1,2 à 1,3 et un risque plus faible que la
 simple détention. PPO donne le résultat le plus fiable, avec un Sharpe stable d'un
-entraînement à l'autre. Comme dans le papier, où TDQN ne devance buy & hold que de
+entraînement à l'autre. Comme dans le papier, où TDQN ne devance buy and hold que de
 peu en moyenne [1, Table 6], l'agent ne bat pas la détention passive sur un marché très
 haussier, mais il capte une bonne part de la hausse en s'exposant beaucoup moins.
 
